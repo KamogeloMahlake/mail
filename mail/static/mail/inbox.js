@@ -10,31 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
   load_mailbox('inbox');
 });
 
-const form = document.getElementById('compose-form');
-  
-form.addEventListener('submit', (event) => {
-  event.preventDefault();
 
-  const recipients = document.getElementById('compose-recipients');
-  const subject = document.getElementById('compose-subject');
-  const body = document.getElementById('compose-body');
-
-  if (!recipients.value || !subject.value || !body.value) return;
-  console.log(event);
-  fetch('/emails', {
-    method: 'POST',
-    body: JSON.stringify({
-      recipients: recipients.value,
-      subject: subject.value,
-      body: body.value
-    })
-  }).then(response => response.json()).then(data => {
-      console.log(data);
-      if (data.error) compose_email();
-      else if (data.message) load_mailbox('sent');
-    });
-
-});
 
 function compose_email() {
 
@@ -47,6 +23,31 @@ function compose_email() {
   document.querySelector('#compose-recipients').value = '';
   document.querySelector('#compose-subject').value = '';
   document.querySelector('#compose-body').value = '';
+  const form = document.getElementById('compose-form');
+  
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const recipients = document.getElementById('compose-recipients');
+    const subject = document.getElementById('compose-subject');
+    const body = document.getElementById('compose-body');
+
+    if (!recipients.value || !subject.value || !body.value) return;
+    console.log(event);
+    fetch('/emails', {
+      method: 'POST',
+      body: JSON.stringify({
+        recipients: recipients.value,
+        subject: subject.value,
+        body: body.value
+      })
+    }).then(response => response.json()).then(data => {
+        console.log(data);
+        if (data.error) compose_email();
+        else if (data.message) load_mailbox('sent');
+      });
+
+  });
 }
 
 function load_mailbox(mailbox) {
@@ -59,7 +60,6 @@ function load_mailbox(mailbox) {
   composeView.style.display = 'none';
   emailDetails.style.display = 'none';
   // Show the mailbox name
-  const emailView = document.querySelector('#emails-view');
   emailView.innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
 
   fetch(`/emails/${mailbox}`).then(response => response.json()).then(emails => {
@@ -82,7 +82,7 @@ function load_mailbox(mailbox) {
         
 
         fetch(`/emails/${email.id}`).then(response => response.json()).then(data => {
-          emailView.innerHTML = `
+          emailDetails.innerHTML = `
             <div class="list-group">
               <div class="list-group-item"><strong>From: </strong>${data.sender}</div>
               <div class="list-group-item"><strong>To: </strong>${data.recipients}</div>
@@ -105,7 +105,7 @@ function load_mailbox(mailbox) {
             })
           }
           
-          emailView.querySelector('.reply').addEventListener('click', () => {
+          emailDetails.querySelector('.reply').addEventListener('click', () => {
             fetch(`/emails/${email.id}`).then(res => res.json()).then(e => {
               compose_email();
               document.getElementById('compose-recipients').value = e.sender;
@@ -114,7 +114,7 @@ function load_mailbox(mailbox) {
             });
           });
 
-          emailView.querySelector('.archive').addEventListener('click', () => {
+          emailDetails.querySelector('.archive').addEventListener('click', () => {
             fetch(`/emails/${email.id}`, {
               method: 'PUT',
               body: JSON.stringify({
