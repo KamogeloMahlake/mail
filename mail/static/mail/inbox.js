@@ -69,7 +69,9 @@ function load_mailbox(mailbox) {
 
     emails.forEach(email => {
       const li = document.createElement('li');
-      li.className = 'list-group-item';
+      const readState = email.read ? 'read' : '';
+      li.className = `list-group-item ${readState}`;
+
       li.innerHTML = `<h5>Sender: ${email.sender}</h5>
                       <h3>Subject: ${email.subject}</h3>
                       <p>${email.timestamp}</p>`;
@@ -96,7 +98,7 @@ function load_mailbox(mailbox) {
               <div class="list-group-item">${data.body}</div>
             </div>
 `
-          if (!data.read) 
+          if (!data.read && mailbox === 'inbox') 
           {
             fetch(`/emails/${email.id}`, {
               method: 'PUT',
@@ -114,16 +116,22 @@ function load_mailbox(mailbox) {
               document.getElementById('compose-body').value = `On ${e.timestamp} ${e.sender} wrote: ${e.body}`;
             });
           });
-
-          emailDetails.querySelector('.archive').addEventListener('click', () => {
-            fetch(`/emails/${email.id}`, {
-              method: 'PUT',
-              body: JSON.stringify({
-                archived: !data.archived
-              })
-            }).then(() => load_mailbox('archive'));
-          });
-
+          
+          if (mailbox !== 'sent')
+          {
+            emailDetails.querySelector('.archive').addEventListener('click', () => {
+              fetch(`/emails/${email.id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                  archived: !data.archived
+                })
+              }).then(() => load_mailbox('inbox'));
+            });
+          }
+          else
+          {
+            emailDetails.querySelector('.archive').hidden = true;
+          }
         });
       });
     });
