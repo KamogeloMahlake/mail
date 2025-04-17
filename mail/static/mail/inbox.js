@@ -82,6 +82,7 @@ function load_mailbox(mailbox) {
         
 
         fetch(`/emails/${email.id}`).then(response => response.json()).then(data => {
+          const archiveState = data.archived ? 'Unarchive' : 'Archive';
           emailDetails.innerHTML = `
             <div class="list-group">
               <div class="list-group-item"><strong>From: </strong>${data.sender}</div>
@@ -90,7 +91,7 @@ function load_mailbox(mailbox) {
               <div class="list-group-item"><strong>Timestamp: </strong>${data.timestamp}</div>
               <div class="list-group-item">
                 <button class="reply btn">Reply</button>
-                <button class="archive btn">Archive</button>
+                <button class="archive btn">${archiveState}</button>
               </div>
               <div class="list-group-item">${data.body}</div>
             </div>
